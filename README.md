@@ -1,8 +1,8 @@
 gerrit-growler
 ==============
 
-Receive a growl notification whenever your watched projects in Gerrit have
-review activity.
+Receive a growl notification whenever your starred reviews in Gerrit have
+activity.
 
 Dependencies
 ------------
