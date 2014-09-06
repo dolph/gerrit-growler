@@ -122,6 +122,7 @@ def starred_reviews(host, port, username):
 
 
 def notify(event):
+    """Emit a growl notification for the specified event."""
     command = ['terminal-notifier']
 
     # The notification title.
