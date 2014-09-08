@@ -132,8 +132,10 @@ def notify(event):
     # The notification message.
     message = list()
     message.append(event['type'].replace('-', ' ').capitalize())
-    message.append('by')
-    message.append(event['author'].get('name', event['author']['username']))
+    if 'author' in event:
+        message.append('by')
+        message.append(event['author'].get('name',
+                                           event['author']['username']))
     for approval in event.get('approvals', []):
         message.append('(%(type)s %(negative)s%(value)s)' % {
             'type': approval['type'],
