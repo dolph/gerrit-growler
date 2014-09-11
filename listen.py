@@ -69,12 +69,18 @@ def list_events(host, port, username):
 
 
 def is_priority(event, host, port, username):
-    """Priority changes are approved."""
+    """Priority changes are starred."""
     if 'change' not in event:
         # this is probably a ref-updated event
         return False
 
     change_number = event['change']['number']
+
+    if 'author' in event and event['author']['username'] == username:
+        # this is an event we created ourselves, so ignore it
+        print('Ourself: %s' % change_number)
+        return False
+
     starred_review_numbers = starred_reviews(host, port, username)
     if VERBOSE:
         print('%sStarred: change %s in %s' % (
