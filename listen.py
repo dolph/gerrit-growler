@@ -76,10 +76,12 @@ def is_priority(event, host, port, username):
 
     change_number = event['change']['number']
 
-    if 'author' in event and event['author']['username'] == username:
-        # this is an event we created ourselves, so ignore it
-        print('Ourself: %s' % change_number)
-        return False
+    if 'author' in event:
+        user = event['author'].get('username')
+        if user == username:
+            # this is an event we created ourselves, so ignore it
+            print('Ourself: %s' % change_number)
+            return False
 
     starred_review_numbers = starred_reviews(host, port, username)
     if VERBOSE:
