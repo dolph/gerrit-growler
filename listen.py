@@ -42,6 +42,9 @@ def get_client(host, port, username, password=None):
     except paramiko.PasswordRequiredException:
         password = getpass.getpass('SSH Key Passphrase: ')
         return get_client(password=getpass.getpass('SSH Key Passphrase: '))
+    except paramiko.AuthenticationException:
+        raise SystemExit('Failed to authenticate against %s. Have you added '
+                         'your SSH public key to Gerrit?' % host)
     return client
 
 
