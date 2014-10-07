@@ -160,7 +160,7 @@ def notify(event):
     command.extend(['-subtitle', '"%s"' % subtitle])
 
     # The URL of a resource to open when the user clicks the notification.
-    url = 'https://review.openstack.org/#/c/%s/' % event['change']['number']
+    url = 'https://review.openstack.org/%s' % event['change']['number']
     command.extend(['-open', '"%s"' % url])
 
     if DEBUG:
