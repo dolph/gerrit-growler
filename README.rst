@@ -2,8 +2,9 @@
 gerrit-growler
 ==============
 
-Receive a growl notification whenever your starred reviews in Gerrit have
-activity.
+Receive a growl notifications from Gerrit.
+
+Currently, you'll only receive notifications on reviews that you have starred.
 
 Dependencies
 ------------
@@ -16,9 +17,18 @@ notifications::
 
 I'd be happy to see support added for additional notification frameworks.
 
+Installation
+------------
+
+Install from PyPi::
+
+    $ pip install gerrit-growler
+
 Usage
 -----
 
 Just run the listener::
 
-    $ python listen.py
+    $ gerrit-growler
+
+See ``--help`` for authentication and Gerrit endpoint options.
