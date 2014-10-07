@@ -2,7 +2,7 @@
 gerrit-growler
 ==============
 
-Receive a growl notifications from Gerrit.
+Receive growl notifications from Gerrit.
 
 Currently, you'll only receive notifications on reviews that you have starred.
 
