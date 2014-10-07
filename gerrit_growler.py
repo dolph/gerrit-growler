@@ -169,22 +169,9 @@ def notify(event):
     subprocess.call(command)
 
 
-def main(args):
+def main():
     global DEBUG, VERBOSE
 
-    DEBUG = args.debug
-    VERBOSE = args.verbose
-
-    while True:
-        try:
-            for event in list_events(args.host, args.port, args.username):
-                if is_priority(event, args.host, args.port, args.username):
-                    notify(event)
-        except Exception:
-            traceback.print_exc()
-
-
-if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Receive growl notifications for your starred changes in '
                     'Gerrit.')
@@ -207,4 +194,18 @@ if __name__ == '__main__':
         default=getpass.getuser(),
         help='Your SSH username for Gerrit.')
     args = parser.parse_args()
-    main(args)
+
+    DEBUG = args.debug
+    VERBOSE = args.verbose
+
+    while True:
+        try:
+            for event in list_events(args.host, args.port, args.username):
+                if is_priority(event, args.host, args.port, args.username):
+                    notify(event)
+        except Exception:
+            traceback.print_exc()
+
+
+if __name__ == '__main__':
+    main()
