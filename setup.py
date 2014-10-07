@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name='gerrit-growler',
-    version='1.0.0',
+    version='1.0.1',
     description='Receive growl notifications from Gerrit.',
     author='Dolph Mathews',
     author_email='dolph.mathews@gmail.com',
