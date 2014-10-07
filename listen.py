@@ -66,7 +66,8 @@ def list_events(host, port, username):
                     if '\n' in return_buffer:
                         event, return_buffer = return_buffer.split('\n', 1)
                         yield json.loads(event)
-            time.sleep(1)
+            # FIXME: there's got to be a more efficient way to idle here
+            time.sleep(0.1)
     finally:
         client.close()
 
