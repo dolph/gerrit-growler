@@ -1,9 +1,20 @@
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
 import argparse
 import getpass
 import json
 import os
 import select
-import subprocess
 import time
 import traceback
 
@@ -73,73 +84,24 @@ def list_events(host, port, username):
 
 
 def is_priority(event, host, port, username):
-    """Priority changes are starred."""
     if 'change' not in event:
         # this is probably a ref-updated event
         return False
 
-    change_number = event['change']['number']
-
-    if 'author' in event:
-        user = event['author'].get('username')
-        if user == username:
-            # this is an event we created ourselves, so ignore it
-            print('Ourself: %s' % change_number)
-            return False
-
-    starred_review_numbers = starred_reviews(host, port, username)
-    if VERBOSE:
-        print('%sStarred: change %s in %s' % (
-            'Not ' if change_number not in starred_review_numbers else '',
-            change_number,
-            event['change']['project']))
-    return change_number in starred_review_numbers
+    return True
 
 
-@CACHE.cache_on_arguments(expiration_time=60)
-def starred_reviews(host, port, username):
-    """List change numbers of starred reviews."""
-    command = ['gerrit query']
-    command.extend(['--format=JSON'])
-    command.extend(['is:starred'])
-
-    return_buffer = ''
-    try:
-        client = get_client(host, port, username)
-
-        if DEBUG:
-            print(' '.join(command))
-        stdin, stdout, stderr = client.exec_command(' '.join(command))
-
-        while not stderr.channel.exit_status_ready():
-            while stderr.channel.recv_ready():
-                readable, w, e = select.select(
-                    [stderr.channel], [], [], GERRIT_TIMEOUT)
-
-                # readable will be an empty string when the channel closes
-                if readable:
-                    return_buffer += stderr.channel.recv(GERRIT_RECV_BYTES)
-    finally:
-        client.close()
-
-    change_numbers = []
-    try:
-        for change in return_buffer.splitlines()[:-1]:
-            change_numbers.append(json.loads(change)['number'])
-    except IndexError:
-        if DEBUG:
-            print(return_buffer)
-        return starred_reviews(retry=False)
-    return change_numbers
+def log_event(event):
+    event['received_at'] = time.time()
+    with open('event.log', 'a') as f:
+        f.write(json.dumps(event, separators=(',', ':')))
+        f.write('\n')
 
 
 def notify(event):
     """Emit a growl notification for the specified event."""
-    command = ['terminal-notifier']
-
     # The notification title.
     title = event['change']['subject']
-    command.extend(['-title', '"%s"' % title])
 
     # The notification message.
     message = list()
@@ -154,24 +116,17 @@ def notify(event):
             'negative': '+' if '-' not in approval['value'] else '',
             'value': approval['value']})
     message = ' '.join(message)
-    command.extend(['-message', '"%s"' % message])
 
     # The notification subtitle.
     subtitle = event['change']['project']
-    command.extend(['-subtitle', '"%s"' % subtitle])
 
     # The URL of a resource to open when the user clicks the notification.
     url = 'https://review.openstack.org/%s' % event['change']['number']
-    command.extend(['-open', '"%s"' % url])
 
-    if DEBUG:
-        print(' '.join(command))
-    subprocess.call(command)
+    print((title, subtitle, message, url))
 
 
-def main():
-    global DEBUG, VERBOSE
-
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Receive growl notifications for your starred changes in '
                     'Gerrit.')
@@ -201,11 +156,8 @@ def main():
     while True:
         try:
             for event in list_events(args.host, args.port, args.username):
+                log_event(event)
                 if is_priority(event, args.host, args.port, args.username):
                     notify(event)
         except Exception:
             traceback.print_exc()
-
-
-if __name__ == '__main__':
-    main()
