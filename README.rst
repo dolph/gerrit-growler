@@ -1,34 +1,31 @@
 ==============
-gerrit-growler
+gerrit-logger
 ==============
 
-Receive growl notifications from Gerrit.
+Log the Gerrit event stream in markdown.
 
-Currently, you'll only receive notifications on reviews that you have starred.
+This is a two-part tool to:
 
-Dependencies
-------------
+1. Capture the Gerrit event stream into a log file (using `event-logger`).
 
-This currently depends on `terminal-notifier
-<https://github.com/alloy/terminal-notifier>`_ on OS X 10.8+ to produce
-notifications::
-
-    $ brew install terminal-notifier
-
-I'd be happy to see support added for additional notification frameworks.
+2. Render a log file of the Gerrit event stream into a human-readable markdown file (using `events-in-english`).
 
 Installation
 ------------
 
 Install from PyPi::
 
-    $ pip install gerrit-growler
+    $ pip install gerrit-logger
 
 Usage
 -----
 
-Just run the listener::
+Start by running the event logger::
 
-    $ gerrit-growler
+    $ gerrit-logger
 
 See ``--help`` for authentication and Gerrit endpoint options.
+
+Next, you can (perhaps periodically) render a log file into markdown::
+
+    $ cat event.log | gerrit-events-in-english
