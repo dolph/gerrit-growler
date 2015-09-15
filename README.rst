@@ -14,7 +14,7 @@ This is a two-part tool which:
 Installation
 ------------
 
-Clone the repository and Install from source::
+Clone the repository and install from source::
 
     $ pip install .
 
