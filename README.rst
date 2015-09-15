@@ -14,9 +14,9 @@ This is a two-part tool which:
 Installation
 ------------
 
-Install from PyPi::
+Clone the repository and Install from source::
 
-    $ pip install gerrit-logger
+    $ pip install .
 
 Usage
 -----
