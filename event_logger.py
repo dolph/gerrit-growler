@@ -126,7 +126,9 @@ def notify(event):
     print((title, subtitle, message, url))
 
 
-if __name__ == '__main__':
+def main():
+    global DEBUG, VERBOSE
+
     parser = argparse.ArgumentParser(
         description='Receive growl notifications for your starred changes in '
                     'Gerrit.')
@@ -161,3 +163,7 @@ if __name__ == '__main__':
                     notify(event)
         except Exception:
             traceback.print_exc()
+
+
+if __name__ == '__main__':
+    main()

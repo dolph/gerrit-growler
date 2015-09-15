@@ -53,7 +53,7 @@ def pretty_print(event, message):
             message))
 
 
-if __name__ == '__main__':
+def main():
     for line in fileinput.input():
         event = json.loads(line)
         if event['type'] == 'change-abandoned':
@@ -131,3 +131,7 @@ if __name__ == '__main__':
             pass
         else:
             raise SystemExit(json.dumps(event, indent=2))
+
+
+if __name__ == '__main__':
+    main()
