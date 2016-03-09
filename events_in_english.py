@@ -129,6 +129,12 @@ def main():
         elif event['type'] == 'merge-failed':
             # Non-human event; ignore?
             pass
+        elif event['type'] == 'ref-replicated':
+            # Non-human event; ignore?
+            pass
+        elif event['type'] == 'ref-replication-done':
+            # Non-human event; ignore?
+            pass
         else:
             raise SystemExit(json.dumps(event, indent=2))
 
