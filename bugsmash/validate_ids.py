@@ -11,12 +11,47 @@
 # under the License.
 
 import json
+import os
+
+import dogpile.cache
+import requests
 
 
 DEFAULT_DATA = 'default_data.json'
 UNVALIDATED_IDS = 'unvalidated-ids'
 VALIDATED_IDS = 'validated-ids'
 INVALID_IDS = 'invalid-ids'
+
+
+CACHE_DIR = '/tmp/gerrit-logger'
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR, 0o0700)
+
+CACHE = dogpile.cache.make_region().configure(
+    'dogpile.cache.dbm',
+    expiration_time=60 * 60 * 24 * 7,
+    arguments={
+        'filename': '%s/cache.dbm' % CACHE_DIR,
+    }
+)
+
+
+@CACHE.cache_on_arguments()
+def GET(url, params=None):
+    resp = requests.get(url, params=params)
+    print('GET %s' % resp.url)
+    resp.raise_for_status()
+    data = resp.json()
+    return data
+
+
+STACKALYTICS = 'http://stackalytics.com/api/1.0'
+USERS_ENDPOINT = STACKALYTICS + '/users'
+CONTRIBUTORS = GET(USERS_ENDPOINT)['data']
+
+for contributor in CONTRIBUTORS:
+    user = GET(STACKALYTICS + '/users/' + contributor['id'])['user']
+    contributor.update(user)
 
 
 def equal(s1, s2):
@@ -30,9 +65,9 @@ def equal(s1, s2):
         return True
 
 
-def write_gerrit_id(user):
+def write_gerrit_id(contributor):
     with open(VALIDATED_IDS, 'a') as f:
-        f.write('%s\n' % user.get('gerrit_id', user.get('launchpad_id')))
+        f.write('%s\n' % contributor['gerrit_id'])
 
 
 def write_invalid_id(token):
@@ -56,22 +91,42 @@ if __name__ == '__main__':
 
     for token in bugsmash_ids:
         token = token.lower()
-        for user in stackalytics_users:
-            if equal(token, user.get('launchpad_id')):
-                write_gerrit_id(user)
+        found = True
+
+        for contributor in CONTRIBUTORS:
+            if equal(token, contributor.get('id')):
+                found = True
                 break
 
-            if equal(token, user.get('user_name')):
-                write_gerrit_id(user)
+            if equal(token, contributor.get('launchpad_id')):
+                found = True
                 break
 
-            for email in user.get('emails'):
+            if equal(token, contributor.get('user_id')):
+                found = True
+                break
+
+            if equal(token, contributor.get('user_name')):
+                found = True
+                break
+
+            if equal(token, contributor.get('gerrit_id')):
+                found = True
+                break
+
+            if equal(token, contributor.get('text')):
+                found = True
+                break
+
+            for email in contributor.get('emails'):
                 if equal(token, email):
-                    write_gerrit_id(user)
+                    found = True
                     break
+
+        if found:
+            write_gerrit_id(contributor)
         else:
-            # sys.stderr.write('%s\n' % token)
-            pass
+            write_invalid_id(token)
 
     print(
         ' '.join([
