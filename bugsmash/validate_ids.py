@@ -13,6 +13,12 @@
 import json
 
 
+DEFAULT_DATA = 'default_data.json'
+UNVALIDATED_IDS = 'unvalidated-ids'
+VALIDATED_IDS = 'validated-ids'
+INVALID_IDS = 'invalid-ids'
+
+
 def equal(s1, s2):
     if s1 is None and s2 is None:
         return True
@@ -25,19 +31,27 @@ def equal(s1, s2):
 
 
 def write_gerrit_id(user):
-    with open('validated-ids', 'a') as f:
+    with open(VALIDATED_IDS, 'a') as f:
         f.write('%s\n' % user.get('gerrit_id', user.get('launchpad_id')))
 
 
+def write_invalid_id(token):
+    with open(INVALID_IDS, 'a') as f:
+        f.write('%s\n' % token)
+
+
 if __name__ == '__main__':
-    # Truncate the validated IDs file.
-    with open('validated-ids', 'w+') as f:
+    # Truncate output files.
+    with open(VALIDATED_IDS, 'w+') as f:
         pass
 
-    with open('default_data.json') as f:
+    with open(INVALID_IDS, 'w+') as f:
+        pass
+
+    with open(DEFAULT_DATA) as f:
         stackalytics_users = json.loads(f.read())['users']
 
-    with open('unvalidated-ids') as f:
+    with open(UNVALIDATED_IDS) as f:
         bugsmash_ids = [s.strip() for s in f.readlines()]
 
     for token in bugsmash_ids:
@@ -58,3 +72,12 @@ if __name__ == '__main__':
         else:
             # sys.stderr.write('%s\n' % token)
             pass
+
+    print(
+        ' '.join([
+            'cat', VALIDATED_IDS, '|', 'sort', '-u', '>', '%s-sorted' %
+            VALIDATED_IDS]))
+
+    print(
+        ' '.join([
+            'mv', '%s-sorted' % VALIDATED_IDS, VALIDATED_IDS]))
