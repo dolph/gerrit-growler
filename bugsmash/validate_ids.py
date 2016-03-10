@@ -21,6 +21,7 @@ DEFAULT_DATA = 'default_data.json'
 UNVALIDATED_IDS = 'unvalidated-ids'
 VALIDATED_IDS = 'validated-ids'
 INVALID_IDS = 'invalid-ids'
+STACKALYTICS_USERS = 'stackalytics-users'
 
 
 CACHE_DIR = '/tmp/gerrit-logger'
@@ -54,6 +55,10 @@ for contributor in CONTRIBUTORS:
     contributor.update(user)
 
 
+with open(STACKALYTICS_USERS, 'w+') as f:
+    f.write(json.dumps(CONTRIBUTORS, indent=4, sort_keys=True))
+
+
 def equal(s1, s2):
     if s1 is None and s2 is None:
         return True
@@ -82,9 +87,6 @@ if __name__ == '__main__':
 
     with open(INVALID_IDS, 'w+') as f:
         pass
-
-    with open(DEFAULT_DATA) as f:
-        stackalytics_users = json.loads(f.read())['users']
 
     with open(UNVALIDATED_IDS) as f:
         bugsmash_ids = [s.strip() for s in f.readlines()]
