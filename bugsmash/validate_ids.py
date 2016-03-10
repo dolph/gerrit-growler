@@ -16,13 +16,13 @@ import os
 import dogpile.cache
 import requests
 
+COMPANIES = dict()
 
 DEFAULT_DATA = 'default_data.json'
 UNVALIDATED_IDS = 'unvalidated-ids'
 VALIDATED_IDS = 'validated-ids'
 INVALID_IDS = 'invalid-ids'
 STACKALYTICS_USERS = 'stackalytics-users'
-
 
 CACHE_DIR = '/tmp/gerrit-logger'
 if not os.path.exists(CACHE_DIR):
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     for token in bugsmash_ids:
         token = token.lower()
-        found = True
+        found = False
 
         for contributor in CONTRIBUTORS:
             if equal(token, contributor.get('id')):
@@ -126,6 +126,13 @@ if __name__ == '__main__':
                     break
 
         if found:
+            company_name = 'unknown'
+            for company in contributor['companies']:
+                if company['end_date'] == 0:
+                    company_name = company['company_name']
+                    break
+            COMPANIES.setdefault(company_name, set())
+            COMPANIES[company_name].add(contributor['gerrit_id'])
             write_gerrit_id(contributor)
         else:
             write_invalid_id(token)
@@ -138,3 +145,12 @@ if __name__ == '__main__':
     print(
         ' '.join([
             'mv', '%s-sorted' % VALIDATED_IDS, VALIDATED_IDS]))
+
+    for company in sorted(COMPANIES.keys()):
+        print('%s: %d' % (company, len(COMPANIES[company])))
+        slug = company.lower().replace(' ', '-').replace('*', '')
+        with open(VALIDATED_IDS + '-' + slug, 'w+') as f:
+            pass
+        with open(VALIDATED_IDS + '-' + slug, 'a') as f:
+            for contributor in COMPANIES[company]:
+                f.write('%s\n' % contributor)
