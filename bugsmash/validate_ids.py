@@ -24,11 +24,16 @@ def equal(s1, s2):
         return True
 
 
-def gerrit_id(user):
-    return user.get('gerrit_id', user.get('launchpad_id'))
+def write_gerrit_id(user):
+    with open('validated-ids', 'a') as f:
+        f.write('%s\n' % user.get('gerrit_id', user.get('launchpad_id')))
 
 
 if __name__ == '__main__':
+    # Truncate the validated IDs file.
+    with open('validated-ids', 'w+') as f:
+        pass
+
     with open('default_data.json') as f:
         stackalytics_users = json.loads(f.read())['users']
 
@@ -39,16 +44,16 @@ if __name__ == '__main__':
         token = token.lower()
         for user in stackalytics_users:
             if equal(token, user.get('launchpad_id')):
-                print(gerrit_id(user))
+                write_gerrit_id(user)
                 break
 
             if equal(token, user.get('user_name')):
-                print(gerrit_id(user))
+                write_gerrit_id(user)
                 break
 
             for email in user.get('emails'):
                 if equal(token, email):
-                    print(gerrit_id(user))
+                    write_gerrit_id(user)
                     break
         else:
             # sys.stderr.write('%s\n' % token)
